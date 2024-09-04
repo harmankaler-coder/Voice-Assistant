@@ -58,11 +58,30 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  void onSpeechResult(SpeechRecognitionResult result) {
+  void onSpeechResult(SpeechRecognitionResult result) async {
     setState(() {
       lastWords = result.recognizedWords;
       print(lastWords);
     });
+
+    if (result.finalResult) {
+      try {
+        final speech = await openAIService.isArtPromptAPI(lastWords);
+        setState(() {
+          if (speech.contains('https')) {
+            generatedImageUrl = speech;
+            generatedContent = null;
+          } else {
+            generatedImageUrl = null;
+            generatedContent = speech;
+            systemSpeak(speech);
+          }
+        });
+      } catch (error) {
+        print('Error generating content: $error');
+      }
+      await stopListening();
+    }
   }
 
   Future<void> systemSpeak(String content) async {
