@@ -17,10 +17,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final speechToText = SpeechToText();
-  final flutterTts = FlutterTts();
-  String lastWords = '';
+  final SpeechToText speechToText = SpeechToText();
+  final FlutterTts flutterTts = FlutterTts();
   final OpenAiService openAIService = OpenAiService();
+  String lastWords = '';
   String? generatedContent;
   String? generatedImageUrl;
   int start = 200;
@@ -29,18 +29,23 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    initSpeechToText();
-    initTextToSpeech();
+    initializeServices();
+  }
+
+  Future<void> initializeServices() async {
+    await Future.wait([
+      initSpeechToText(),
+      initTextToSpeech(),
+    ]);
+    setState(() {});
   }
 
   Future<void> initTextToSpeech() async {
     await flutterTts.setSharedInstance(true);
-    setState(() {});
   }
 
   Future<void> initSpeechToText() async {
     await speechToText.initialize();
-    setState(() {});
   }
 
   Future<void> startListening() async {
@@ -56,6 +61,7 @@ class _HomePageState extends State<HomePage> {
   void onSpeechResult(SpeechRecognitionResult result) {
     setState(() {
       lastWords = result.recognizedWords;
+      print(lastWords);
     });
   }
 
@@ -65,9 +71,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    if (speechToText.isListening) {
+      speechToText.stop();
+    }
+    if (flutterTts != null) {
+      flutterTts.stop();
+    }
     super.dispose();
-    speechToText.stop();
-    flutterTts.stop();
   }
 
   @override
@@ -135,7 +145,7 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.symmetric(vertical: 10.0),
                     child: Text(
                       generatedContent == null
-                          ? 'Good Morning, what task can I do for you?'
+                          ? 'What task can I do for you?'
                           : generatedContent!,
                       style: TextStyle(
                         fontFamily: 'Cera Pro',
@@ -185,7 +195,7 @@ class _HomePageState extends State<HomePage> {
                       color: Pallete.firstSuggestionBoxColor,
                       headerText: 'ChatGPT',
                       descriptionText:
-                      'A smarter way to stay organized and informed with ChatGPT',
+                          'A smarter way to stay organized and informed with ChatGPT',
                     ),
                   ),
                   SlideInLeft(
@@ -194,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                       color: Pallete.secondSuggestionBoxColor,
                       headerText: 'Dall-E',
                       descriptionText:
-                      'Get inspired and stay creative with your personal assistant powered by Dall-E',
+                          'Get inspired and stay creative with your personal assistant powered by Dall-E',
                     ),
                   ),
                   SlideInLeft(
@@ -203,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                       color: Pallete.thirdSuggestionBoxColor,
                       headerText: 'Smart Voice Assistant',
                       descriptionText:
-                      'Get the best of both worlds with a voice assistant powered by Dall-E and ChatGPT',
+                          'Get the best of both worlds with a voice assistant powered by Dall-E and ChatGPT',
                     ),
                   ),
                 ],
@@ -221,16 +231,20 @@ class _HomePageState extends State<HomePage> {
                 speechToText.isNotListening) {
               await startListening();
             } else if (speechToText.isListening) {
-              final speech = await openAIService.isArtPromptAPI(lastWords);
-              if (speech.contains('https')) {
-                generatedImageUrl = speech;
-                generatedContent = null;
-                setState(() {});
-              } else {
-                generatedImageUrl = null;
-                generatedContent = speech;
-                setState(() {});
-                await systemSpeak(speech);
+              try {
+                final speech = await openAIService.isArtPromptAPI(lastWords);
+                setState(() {
+                  if (speech.contains('https')) {
+                    generatedImageUrl = speech;
+                    generatedContent = null;
+                  } else {
+                    generatedImageUrl = null;
+                    generatedContent = speech;
+                    systemSpeak(speech);
+                  }
+                });
+              } catch (error) {
+                print('Error generating content: $error');
               }
               await stopListening();
             } else {
