@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:project_f/home_page.dart';
 import 'package:project_f/pallete.dart';
+import 'package:project_f/splash_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: Pallete.whiteColor,
         )
       ),
-      home: const HomePage(),
+      home: SplashScreen(),
     );
   }
 }

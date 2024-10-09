@@ -66,15 +66,18 @@ class _HomePageState extends State<HomePage> {
 
     if (result.finalResult) {
       try {
-        final speech = await openAIService.isArtPromptAPI(lastWords);
+        // Determine whether to generate text or image based on the prompt
+        final response = await openAIService.isArtPromptAPI(lastWords);
+
         setState(() {
-          if (speech.contains('https')) {
-            generatedImageUrl = speech;
-            generatedContent = null;
+          // If the response contains an 'https', we assume it's an image URL
+          if (response.contains('https')) {
+            generatedImageUrl = response;
+            generatedContent = null;  // Clear text content if image is generated
           } else {
             generatedImageUrl = null;
-            generatedContent = speech;
-            systemSpeak(speech);
+            generatedContent = response;
+            systemSpeak(response);  // Speak the generated text
           }
         });
       } catch (error) {
@@ -104,7 +107,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: BounceInDown(
-          child: const Text('AI Assistant'),
+          child: const Text('NEXA'),
         ),
         centerTitle: true,
       ),
