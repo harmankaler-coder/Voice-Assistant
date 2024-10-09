@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: BounceInDown(
-          child: const Text('NEXA'),
+          child: const Text('NEXA',style: TextStyle(fontStyle: FontStyle.italic),),
         ),
         centerTitle: true,
       ),
