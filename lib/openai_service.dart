@@ -8,7 +8,7 @@ class OpenAiService {
   // Determine if the prompt should generate an image or text
   Future<String> isArtPromptAPI(String prompt) async {
     try {
-      // Ask ChatGPT to determine if the command is related to image generation
+      // to determine if the command is related to image generation
       final res = await http.post(
         Uri.parse('https://api.openai.com/v1/chat/completions'),
         headers: {
@@ -30,7 +30,7 @@ class OpenAiService {
       // Parse the response
       String content = jsonDecode(res.body)['choices'][0]['message']['content'].trim().toLowerCase();
 
-      // Depending on ChatGPT's response, either call Dall-E (for images) or ChatGPT (for text)
+      // Depending on response, either call Dall-E (for images) or ChatGPT (for text)
       if (content.contains('image')) {
         final imageResponse = await dallEAPI(prompt); // Generate image
         return imageResponse;
@@ -43,7 +43,7 @@ class OpenAiService {
     }
   }
 
-  // ChatGPT API for text generation
+  // for text generation
   Future<String> chatGPTAPI(String prompt) async {
     messages.add({
       'role': 'user',
@@ -77,7 +77,7 @@ class OpenAiService {
     }
   }
 
-  // DALL-E API for image generation
+  // for image generation
   Future<String> dallEAPI(String prompt) async {
     messages.add({
       'role': 'user',
